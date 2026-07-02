@@ -41,6 +41,7 @@ export interface RegisterResponse {
     token: string;
     name: string;
   };
+  message?: string;
 }
 
 export interface OrderPayload {
@@ -120,7 +121,7 @@ export async function registerUser(payload: RegisterPayload, lang?: string): Pro
   const json: RegisterResponse = await response.json();
 
   if (!json.status) {
-    throw new Error('Registration was rejected by the server.');
+    throw new Error(json.message || 'Registration was rejected by the server.');
   }
 
   return json;
