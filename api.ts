@@ -1,6 +1,6 @@
 // ─── API Service ──────────────────────────────────────────────────────────────
 // Base URL for all FitRow API calls
-const BASE_URL = 'http://test.fitrow.work/api';
+const BASE_URL = 'https://test.fitrow.work/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
