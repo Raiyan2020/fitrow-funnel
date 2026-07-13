@@ -39,7 +39,7 @@ const LoadingBuilder: React.FC<LoadingBuilderProps> = ({ onComplete, lang }) => 
         </div>
       </div>
 
-      <h2 className="text-xl font-bold mb-2 animate-pulse">{text}</h2>
+      <h2 className="text-xl font-medium mb-2 animate-pulse">{text}</h2>
       <p className="text-gray-500 text-sm">{t.aiProcessing}</p>
     </div>
   );

@@ -164,11 +164,11 @@ const Quiz: React.FC<QuizProps> = ({
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="quizScrollArea flex-1 flex flex-col mt-4 px-6 min-h-0">
-        <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-snug shrink-0">
+      <div className="quizScrollArea flex-1 flex flex-col justify-between mt-4 px-6 min-h-0">
+        <h2 className="text-2xl md:text-3xl font-medium my-6 leading-snug shrink-0">
           {getQuestionText(question.key)}
         </h2>
-        <div className="flex-1 flex flex-col">
+        <div className="flex flex flex-col">
           {renderContent()}
         </div>
       </div>

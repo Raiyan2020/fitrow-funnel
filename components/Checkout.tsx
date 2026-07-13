@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, CreditCard, Wallet, Loader2, AlertCircle } from 'lucide-react';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 import { Language, UserState } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { registerUser, placeOrder, RegisterPayload, OrderPayload, Package, getPaymentMethods, PaymentMethod } from '../api';
@@ -155,7 +157,8 @@ const TARGET_ZONE_MAP: Record<string, string> = {
 function buildRegisterPayload(
   userState: UserState,
   name: string,
-  phone: string
+  phone: string,
+  countryCode: string
 ): RegisterPayload {
   const get = (key: string) => getAnswerByKey(userState, key);
 
@@ -204,7 +207,7 @@ function buildRegisterPayload(
     days_exercise: 'Saturday,Sunday,Monday',
     dite_id: '',
     calories: '',
-    country_code: '970',
+    country_code: countryCode || '965',
   };
 }
 
@@ -262,6 +265,7 @@ const Checkout: React.FC<CheckoutProps> = ({
 }) => {
   const t = TRANSLATIONS[lang];
   const [formData, setFormData] = useState({ name: '', phone: '' });
+  const [countryCode, setCountryCode] = useState('965');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiStep, setApiStep] = useState<'idle' | 'registering' | 'ordering' | 'redirecting'>('idle');
@@ -306,7 +310,16 @@ const Checkout: React.FC<CheckoutProps> = ({
   const meta = getPackageMetadata(selectedPkg.duration);
   const planLabel = selectedPkg.name || (lang === 'ar' ? meta.labelAr : meta.labelEn);
   const planTag = selectedPkg.title || (lang === 'ar' ? meta.tagAr : meta.tagEn);
-  const planPriceText = lang === 'ar' ? `${selectedPkg.price}$` : `$${selectedPkg.price}`;
+
+  const DISCOUNT_MAP: Record<string, string> = {
+    '29': '19',
+    '49': '39',
+    '79': '50',
+    '99': '79',
+  };
+  const discountedPrice = DISCOUNT_MAP[selectedPkg.price] || null;
+  const finalPrice = discountedPrice || selectedPkg.price;
+  const planPriceText = lang === 'ar' ? `${finalPrice}$` : `$${finalPrice}`;
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -315,7 +328,7 @@ const Checkout: React.FC<CheckoutProps> = ({
     setApiStep('registering');
 
     try {
-      const payload = buildRegisterPayload(userState, formData.name, formData.phone);
+      const payload = buildRegisterPayload(userState, formData.name, formData.phone, countryCode);
       const registerResp = await registerUser(payload, lang);
       if (registerResp.status && registerResp.data?.token) {
         const token = registerResp.data.token;
@@ -343,7 +356,7 @@ const Checkout: React.FC<CheckoutProps> = ({
       const orderPayload: OrderPayload = {
         package_id: String(selectedPkg.id),
         payment_id: selectedPaymentId,
-        total: selectedPkg.price,
+        total: finalPrice,
         type: '1',
       };
       const orderResp = await placeOrder(authToken, orderPayload, lang);
@@ -352,7 +365,7 @@ const Checkout: React.FC<CheckoutProps> = ({
         onSuccess(authToken);
         setApiStep('redirecting');
         await new Promise((r) => setTimeout(r, 400));
-        window.location.href = orderResp.data;
+        window.open(orderResp.data, '_blank');
       } else {
         throw new Error(orderResp.message ?? 'Order was rejected by the server.');
       }
@@ -407,14 +420,21 @@ const Checkout: React.FC<CheckoutProps> = ({
             className={`text-xs text-brand-lime/80 hover:text-brand-lime mt-2 text-start flex items-center gap-1 w-fit transition-colors disabled:opacity-50 ${lang === 'ar' ? 'flex-row-reverse space-x-reverse' : ''
               }`}
           >
-            <ChevronLeft size={12} className={lang === 'ar' ? 'rotate-180' : ''} />
+            <ChevronLeft size={12} />
             {subStep === 'payment' && !userState.authToken
               ? (lang === 'ar' ? 'تعديل البيانات' : 'Edit details')
               : t.changePackage
             }
           </button>
         </div>
-        <div className="font-black text-white text-xl">{planPriceText}</div>
+        <div className="flex flex-col items-end shrink-0">
+          {discountedPrice && (
+            <span className="text-sm text-gray-500 line-through">
+              {lang === 'ar' ? `${selectedPkg.price}$` : `$${selectedPkg.price}`}
+            </span>
+          )}
+          <span className="font-black text-white text-xl">{planPriceText}</span>
+        </div>
       </div>
 
       {/* Error Banner */}
@@ -445,13 +465,24 @@ const Checkout: React.FC<CheckoutProps> = ({
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1 text-start">
                 {t.phoneNumber}
               </label>
-              <input
-                required
-                type="tel"
-                disabled={isLoading}
-                className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:border-brand-lime focus:outline-none transition-colors disabled:opacity-50"
+              <PhoneInput
+                country={'kw'}
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(value, data: any) => {
+                  setFormData({ ...formData, phone: value });
+                  if (data?.dialCode) {
+                    setCountryCode(data.dialCode);
+                  }
+                }}
+                disabled={isLoading}
+                enableSearch
+                searchPlaceholder={lang === 'ar' ? 'ابحث عن دولة...' : 'Search country...'}
+                inputClass="!w-full !bg-white/5 !border-white/10 !rounded-xl !p-4 !pl-14 !text-white !h-auto !text-base focus:!border-brand-lime !transition-colors disabled:!opacity-50"
+                containerClass="!w-full phone-input-dark !dir-ltr"
+                containerStyle={{ direction: 'ltr' }}
+                buttonClass="!bg-white/5 !border-white/10 !rounded-l-xl hover:!bg-white/10 !h-auto"
+                dropdownClass="!bg-black !text-white !border-white/10 !rounded-xl !shadow-2xl"
+                searchClass="!bg-white !text-white !border-white/10 !rounded-lg"
               />
             </div>
           </>
@@ -467,7 +498,7 @@ const Checkout: React.FC<CheckoutProps> = ({
                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1 text-start">
                   {lang === 'ar' ? 'اختر طريقة الدفع' : 'Select Payment Method'}
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3">
                   {paymentMethods.map((method) => {
                     const isSelected = selectedPaymentId === String(method.id);
                     return (

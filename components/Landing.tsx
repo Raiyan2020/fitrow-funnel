@@ -36,7 +36,7 @@ const Landing: React.FC<LandingProps> = ({ onNext, lang }) => {
             className="relative w-full h-full object-contain rounded-2xl z-10"
           />
         </div>
-        <h1 className="text-lg md:text-xl font-black mb-5 leading-normal max-w-sm px-2">
+        <h1 className="text-lg md:text-xl font-medium mb-5 leading-normal max-w-sm px-2">
           {t.landingHeadline.split('\n').map((line, i) => (
             <React.Fragment key={i}>
               {line}
