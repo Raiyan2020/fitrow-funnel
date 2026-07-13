@@ -157,9 +157,16 @@ const TARGET_ZONE_MAP: Record<string, string> = {
 function buildRegisterPayload(
   userState: UserState,
   name: string,
-  phone: string,
-  countryCode: string
+  fullPhone: string,
+  dialCode: string
 ): RegisterPayload {
+  // react-phone-input-2 returns the full number WITHOUT '+' (e.g. '96577887887')
+  // and dialCode also WITHOUT '+' (e.g. '965').
+  // Strip the dialCode prefix so we only send the local number (e.g. '77887887').
+  const localPhone = fullPhone.startsWith(dialCode)
+    ? fullPhone.slice(dialCode.length)
+    : fullPhone;
+
   const get = (key: string) => getAnswerByKey(userState, key);
 
   const bodyTypeRaw = get('body_type');
@@ -206,10 +213,11 @@ function buildRegisterPayload(
     days_exercise: 'Saturday,Sunday,Monday',
     dite_id: '',
     calories: '',
-    phone,
-    country_code: countryCode || '965',
+    phone: localPhone,
+    country_code: `+${dialCode || '965'}`,
   };
 }
+
 
 const getPackageMetadata = (duration: string) => {
   switch (duration) {

@@ -1,0 +1,12 @@
+Options -MultiViews
+RewriteEngine On
+RewriteBase /
+
+# ── Payment callback pages (serve .html without the extension) ──────────────
+RewriteRule ^payment/success/?$ /payment/success.html [L]
+RewriteRule ^payment/fail/?$    /payment/fail.html    [L]
+
+# ── SPA fallback – send everything else to index.html ───────────────────────
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
