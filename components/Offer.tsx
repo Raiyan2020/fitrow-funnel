@@ -213,7 +213,8 @@ const Offer: React.FC<OfferProps> = ({
               const labelText = pkg.name || (lang === 'ar' ? meta.labelAr : meta.labelEn);
               const dailyCostText = pkg.details || (lang === 'ar' ? `تكلفة اليوم الواحد ${(parseFloat(pkg.price) / (parseInt(pkg.duration) || 30)).toFixed(2)}$` : `$${(parseFloat(pkg.price) / (parseInt(pkg.duration) || 30)).toFixed(2)} per day`);
               const tagText = pkg.title || (lang === 'ar' ? meta.tagAr : meta.tagEn);
-              const priceText = lang === 'ar' ? `${pkg.price}$` : `$${pkg.price}`;
+              const originalPrice = lang === 'ar' ? `${pkg.price}$` : `$${pkg.price}`;
+              const discountedPrice = pkg.discount != null ? (lang === 'ar' ? `${pkg.discount}$` : `$${pkg.discount}`) : null;
 
               return (
                 <div
@@ -243,7 +244,16 @@ const Offer: React.FC<OfferProps> = ({
                       <p className={`text-xs mt-0.5 ${isSelected ? 'text-brand-lime' : 'text-gray-500'}`}>{dailyCostText}</p>
                     </div>
                   </div>
-                  <p className="text-xl font-bold text-white shrink-0">{priceText}</p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {discountedPrice ? (
+                      <>
+                        <p className="text-sm font-semibold text-gray-500 line-through">{originalPrice}</p>
+                        <p className="text-xl font-bold text-white">{discountedPrice}</p>
+                      </>
+                    ) : (
+                      <p className="text-xl font-bold text-white">{originalPrice}</p>
+                    )}
+                  </div>
                 </div>
               );
             })}

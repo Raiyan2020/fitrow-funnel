@@ -157,9 +157,16 @@ const TARGET_ZONE_MAP: Record<string, string> = {
 function buildRegisterPayload(
   userState: UserState,
   name: string,
-  phone: string,
-  countryCode: string
+  fullPhone: string,
+  dialCode: string
 ): RegisterPayload {
+  // react-phone-input-2 gives the full number without '+' (e.g. '96560074170')
+  // and dialCode without '+' (e.g. '965').
+  // Strip the dialCode prefix to get the local number (e.g. '60074170').
+  const localPhone = fullPhone.startsWith(dialCode)
+    ? fullPhone.slice(dialCode.length)
+    : fullPhone;
+  const countryCode = `+${dialCode}`;
   const get = (key: string) => getAnswerByKey(userState, key);
 
   const bodyTypeRaw = get('body_type');
@@ -202,12 +209,12 @@ function buildRegisterPayload(
     Interested_in: 'BRAIN FUNCTION',
     diet: 'Standerd',
     name,
-    phone,
+    phone: localPhone,
     device_token: 'web',
     days_exercise: 'Saturday,Sunday,Monday',
     dite_id: '',
     calories: '',
-    country_code: countryCode || '965',
+    country_code: countryCode || '+965',
   };
 }
 

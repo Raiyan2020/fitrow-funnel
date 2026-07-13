@@ -1,6 +1,6 @@
 // ─── API Service ──────────────────────────────────────────────────────────────
 // Base URL for all FitRow API calls
-const BASE_URL = 'https://test.fitrow.work/api';
+const BASE_URL = 'https://fitrow.work/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -166,7 +166,7 @@ export async function getPackages(type: number, lang?: string): Promise<Packages
     headers['lang'] = lang;
   }
 
-  const response = await fetch(`${BASE_URL}/packages?type=1`, {
+  const response = await fetch(`${BASE_URL}/packages?type=1&coach=1`, {
     method: 'POST',
     headers,
     body: toFormData({ type }),
