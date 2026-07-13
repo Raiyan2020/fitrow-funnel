@@ -157,16 +157,9 @@ const TARGET_ZONE_MAP: Record<string, string> = {
 function buildRegisterPayload(
   userState: UserState,
   name: string,
-  fullPhone: string,
-  dialCode: string
+  phone: string,
+  countryCode: string
 ): RegisterPayload {
-  // react-phone-input-2 gives the full number without '+' (e.g. '96560074170')
-  // and dialCode without '+' (e.g. '965').
-  // Strip the dialCode prefix to get the local number (e.g. '60074170').
-  const localPhone = fullPhone.startsWith(dialCode)
-    ? fullPhone.slice(dialCode.length)
-    : fullPhone;
-  const countryCode = `+${dialCode}`;
   const get = (key: string) => getAnswerByKey(userState, key);
 
   const bodyTypeRaw = get('body_type');
@@ -209,12 +202,12 @@ function buildRegisterPayload(
     Interested_in: 'BRAIN FUNCTION',
     diet: 'Standerd',
     name,
-    phone: localPhone,
     device_token: 'web',
     days_exercise: 'Saturday,Sunday,Monday',
     dite_id: '',
     calories: '',
-    country_code: countryCode || '+965',
+    phone,
+    country_code: countryCode || '965',
   };
 }
 
@@ -359,6 +352,10 @@ const Checkout: React.FC<CheckoutProps> = ({
     setIsLoading(true);
     setApiStep('ordering');
 
+    // Open the window NOW — synchronously inside the click handler —
+    // so the browser treats it as a trusted user gesture (no popup blocker).
+    const paymentWindow = window.open('', '_blank');
+
     try {
       const orderPayload: OrderPayload = {
         package_id: String(selectedPkg.id),
@@ -371,12 +368,19 @@ const Checkout: React.FC<CheckoutProps> = ({
       if (orderResp.status && orderResp.data) {
         onSuccess(authToken);
         setApiStep('redirecting');
-        await new Promise((r) => setTimeout(r, 400));
-        window.open(orderResp.data, '_blank');
+        if (paymentWindow) {
+          // Navigate the already-opened window to the payment URL.
+          paymentWindow.location.href = orderResp.data;
+        } else {
+          // Fallback: if popup was blocked, redirect in the same tab.
+          window.location.href = orderResp.data;
+        }
       } else {
+        paymentWindow?.close();
         throw new Error(orderResp.message ?? 'Order was rejected by the server.');
       }
     } catch (err: unknown) {
+      paymentWindow?.close();
       const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
       setError(message);
       setIsLoading(false);
