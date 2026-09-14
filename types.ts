@@ -2,13 +2,12 @@ export type Language = 'en' | 'ar';
 
 export enum Step {
   SPLASH = 0,
-  LANDING = 1,
-  GENDER = 2,
-  QUIZ = 3,
-  LOADING = 4,
-  OFFER = 5,
-  CHECKOUT = 6,
-  SUCCESS = 7
+  GENDER = 1,
+  QUIZ = 2,
+  LOADING = 3,
+  OFFER = 4,
+  CHECKOUT = 5,
+  SUCCESS = 6
 }
 
 export interface QuizAnswer {

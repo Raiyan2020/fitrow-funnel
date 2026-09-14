@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Step, Language, UserState } from './types';
 import { QUESTIONS } from './constants';
 import Splash from './components/Splash';
-import Landing from './components/Landing';
 import GenderSelect from './components/GenderSelect';
 import Quiz from './components/Quiz';
 import LoadingBuilder from './components/LoadingBuilder';
@@ -144,8 +143,7 @@ const App: React.FC = () => {
 
         {/* Dynamic Step Content */}
         <div className="flex-1 relative min-h-0 overflow-hidden">
-          {step === Step.SPLASH && <Splash lang={lang} onComplete={() => nextStep(Step.LANDING)} />}
-          {step === Step.LANDING && <Landing lang={lang} onNext={() => nextStep(Step.GENDER)} />}
+          {step === Step.SPLASH && <Splash lang={lang} onComplete={() => nextStep(Step.GENDER)} />}
           {step === Step.GENDER && <GenderSelect lang={lang} onSelect={handleGenderSelect} />}
           {step === Step.QUIZ && (
             <Quiz 
